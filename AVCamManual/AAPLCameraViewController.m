@@ -81,6 +81,8 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 @property (nonatomic) BOOL lockInterfaceRotation;
 @property (nonatomic) id runtimeErrorHandlingObserver;
 
+@property NSString * timeString;
+
 @end
 
 @implementation AAPLCameraViewController
@@ -279,9 +281,17 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000; // Limit exposure duration to
 			
 			// Turn OFF flash for video recording
 			[AAPLCameraViewController setFlashMode:AVCaptureFlashModeOff forDevice:[self videoDevice]];
-			
-			// Start recording to a temporary file.
-			NSString *outputFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[@"movie" stringByAppendingPathExtension:@"mov"]];
+            
+            NSDateFormatter * sdf = [[NSDateFormatter alloc] init];
+            [sdf setDateFormat:@"yyMMdd_HHmm"];
+            _timeString = [sdf stringFromDate:[NSDate date]];
+            NSString *fileName = [[_timeString stringByAppendingString:@"vision" ]
+                                  stringByAppendingPathExtension:@"mov"];
+            
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *documentsDirectory = [paths objectAtIndex:0]; // Get documents folder
+            NSString *outputFilePath = [documentsDirectory stringByAppendingPathComponent:fileName];
+
 			[[self movieFileOutput] startRecordingToOutputFileURL:[NSURL fileURLWithPath:outputFilePath] recordingDelegate:self];
             [self.sensorLogger startLogging];
 		}
@@ -289,7 +299,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000; // Limit exposure duration to
 		{
 			[[self movieFileOutput] stopRecording];
             [self.sensorLogger stopLogging];
-            [self.sensorLogger writeToFile:@"sensor"];
+            NSString *fileName = [[_timeString stringByAppendingString:@"sensor" ]
+                                  stringByAppendingPathExtension:@"txt"];
+            [self.sensorLogger writeToFile:fileName];
 		}
 	});
     
@@ -712,20 +724,20 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000; // Limit exposure duration to
 	// Note the backgroundRecordingID for use in the ALAssetsLibrary completion handler to end the background task associated with this recording. This allows a new recording to be started, associated with a new UIBackgroundTaskIdentifier, once the movie file output's -isRecording is back to NO — which happens sometime after this method returns.
 	UIBackgroundTaskIdentifier backgroundRecordingID = [self backgroundRecordingID];
 	[self setBackgroundRecordingID:UIBackgroundTaskInvalid];
-	
-	[[[ALAssetsLibrary alloc] init] writeVideoAtPathToSavedPhotosAlbum:outputFileURL completionBlock:^(NSURL *assetURL, NSError *error) {
-		if (error)
-		{
-			NSLog(@"%@", error);
-		}
-		
-		[[NSFileManager defaultManager] removeItemAtURL:outputFileURL error:nil];
-		
-		if (backgroundRecordingID != UIBackgroundTaskInvalid)
-		{
-			[[UIApplication sharedApplication] endBackgroundTask:backgroundRecordingID];
-		}
-	}];
+//	
+//	[[[ALAssetsLibrary alloc] init] writeVideoAtPathToSavedPhotosAlbum:outputFileURL completionBlock:^(NSURL *assetURL, NSError *error) {
+//		if (error)
+//		{
+//			NSLog(@"%@", error);
+//		}
+//		
+//		[[NSFileManager defaultManager] removeItemAtURL:outputFileURL error:nil];
+//		
+//		if (backgroundRecordingID != UIBackgroundTaskInvalid)
+//		{
+//			[[UIApplication sharedApplication] endBackgroundTask:backgroundRecordingID];
+//		}
+//	}];
 }
 
 #pragma mark Device Configuration

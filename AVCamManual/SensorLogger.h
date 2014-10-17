@@ -52,6 +52,6 @@
 
 -(float) avgAttSamplingRate;
 
--(void) writeToFile:(NSString *)Prefix;
+-(void) writeToFile:(NSString *)fileName;
 
 @end

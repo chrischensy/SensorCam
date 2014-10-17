@@ -107,18 +107,17 @@ BOOL compassCalibrated = NO;
     [self.attTimestampArray removeAllObjects];
     
     self.logSwitch = YES;
-    NSLog(@"sensor data start logging...");
+    NSLog(@"start sensor data logging...");
 }
 
 -(void) stopLogging {
     self.logSwitch = NO;
-    NSLog(@"sensor data stop logging.");
+    NSLog(@"sensor data logging stopped.");
 }
 
 -(void) startSensor {
-    NSLog(@"stop sensor");
     [self stopLogging];
-    NSLog(@"start sensor logging");
+    NSLog(@"start sensor reading...");
     
     if (self.rawAccEnable) {
         [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue] withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
@@ -177,20 +176,15 @@ BOOL compassCalibrated = NO;
         [self.motionManager stopDeviceMotionUpdates];
     }
     
-    NSLog(@"Sensor Logging Stopped");
+    NSLog(@"Sensor reading stopped.");
 }
 
--(void) writeToFile:(NSString *)prefix {
+-(void) writeToFile:(NSString *)fileName {
     NSError *error;
-    NSDateFormatter * sdf = [[NSDateFormatter alloc] init];
-    [sdf setDateFormat:@"yyMMdd_HHmm"];
-    NSString *fileName = [[prefix stringByAppendingString:[sdf stringFromDate:[NSDate date]]] stringByAppendingPathExtension:@"txt"];
-    
+
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0]; // Get documents folder
     NSString *filePath = [documentsDirectory stringByAppendingPathComponent:fileName];
-    
-    
     
     // if the file exists, delete it.
     if ([[NSFileManager defaultManager] fileExistsAtPath:filePath] == YES)
